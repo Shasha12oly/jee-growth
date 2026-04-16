@@ -1,12 +1,20 @@
 services:
-  # Static Web Service
+  # Node.js Web Service
   - type: web
     name: jee-tracker
-    env: static
+    runtime: node
+    plan: free
     buildCommand: "npm run build"
-    staticPublishPath: ./dist
-    routes:
-      - route: "/*"
+    startCommand: "npm start"
+    env: node
+    buildFilter:
+      paths:
+        - src/**
+        - package.json
+        - package-lock.json
+        - vite.config.js
+        - server.js
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
