@@ -6,7 +6,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild',
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -16,12 +16,6 @@ export default defineConfig({
           vendor: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           charts: ['chart.js']
         }
-      }
-    },
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
       }
     }
   },
