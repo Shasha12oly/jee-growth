@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut, 
-  onAuthStateChanged, 
+  onAuthStateChanged,
   collection, 
   addDoc, 
   query, 
@@ -15,10 +15,9 @@ import {
   setDoc, 
   getDoc, 
   deleteDoc,
-  orderBy, 
   limit, 
-  increment, 
-  Timestamp, 
+  increment,
+  Timestamp,
   User 
 } from './firebase';
 import type { StudySession, PomodoroSession, UserProfile } from './types';
@@ -62,12 +61,10 @@ let authPassword: HTMLInputElement;
 let authTitle: HTMLHeadingElement;
 let authSubmit: HTMLButtonElement;
 let authError: HTMLDivElement;
-let authToggle: HTMLAnchorElement;
 let authToggleText: HTMLSpanElement;
 let authToggleLink: HTMLAnchorElement;
 let appContainer: HTMLDivElement;
 let userEmail: HTMLSpanElement;
-let logoutBtn: HTMLButtonElement;
 
 // Dashboard Elements
 let todayHours: HTMLHeadingElement;
@@ -533,7 +530,7 @@ async function updateAchievements(totalHours: number, totalSessions: number, cur
   }
   
   // Update goal crusher text separately
-  const goalCrusherText = document.querySelector('#goal-crusher-progress').parentElement?.nextElementSibling;
+  const goalCrusherText = document.querySelector('#goal-crusher-progress')?.parentElement?.nextElementSibling;
   if (goalCrusherText) {
     (goalCrusherText as HTMLElement).textContent = `${currentStreak}/7 days`;
   }
@@ -546,7 +543,7 @@ async function updateAchievements(totalHours: number, totalSessions: number, cur
   }
   
   // Update study master text separately
-  const studyMasterText = document.querySelector('#study-master-progress').parentElement?.nextElementSibling;
+  const studyMasterText = document.querySelector('#study-master-progress')?.parentElement?.nextElementSibling;
   if (studyMasterText) {
     (studyMasterText as HTMLElement).textContent = `${Math.round(totalHours)}/100 hours`;
   }
@@ -559,7 +556,7 @@ async function updateAchievements(totalHours: number, totalSessions: number, cur
   }
   
   // Update speed learner text separately
-  const speedLearnerText = document.querySelector('#speed-learner-progress').parentElement?.nextElementSibling;
+  const speedLearnerText = speedLearnerElement?.parentElement?.nextElementSibling;
   if (speedLearnerText) {
     (speedLearnerText as HTMLElement).textContent = `${totalSessions}/50 sessions`;
   }

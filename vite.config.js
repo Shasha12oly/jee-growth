@@ -13,7 +13,7 @@ export default defineConfig({
       },
       output: {
         manualChunks: {
-          vendor: ['firebase'],
+          vendor: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           charts: ['chart.js']
         }
       }
@@ -32,5 +32,8 @@ export default defineConfig({
   preview: {
     port: 4173
   },
-  base: './'
+  base: './',
+  optimizeDeps: {
+    include: ['firebase/app', 'firebase/auth', 'firebase/firestore']
+  }
 })
