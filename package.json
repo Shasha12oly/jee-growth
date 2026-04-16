@@ -1,0 +1,39 @@
+{
+  "name": "jee-tracker-pro",
+  "version": "2.0.0",
+  "description": "Modern JEE Mains Preparation Tracker with Firebase, TypeScript, and Tailwind CSS",
+  "type": "module",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "serve": "node server.js",
+    "build:render": "npm run build && cp -r dist/* . || true",
+    "start": "node server.js",
+    "deploy": "npm run build && npm run build:render"
+  },
+  "keywords": ["jee", "tracker", "firebase", "study", "typescript", "tailwind"],
+  "author": "JEE Tracker Team",
+  "license": "MIT",
+  "dependencies": {
+    "firebase": "^10.7.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "chart.js": "^4.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "vite": "^4.5.0",
+    "tailwindcss": "^3.3.6",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "@tailwindcss/forms": "^0.5.7",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

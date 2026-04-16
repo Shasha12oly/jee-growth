@@ -1,0 +1,32 @@
+services:
+  # Static Web Service
+  - type: web
+    name: jee-tracker
+    env: static
+    buildCommand: "npm run build"
+    staticPublishPath: ./dist
+    routes:
+      - route: "/*"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FIREBASE_API_KEY
+        value: "AIzaSyDrORq3mZHx1tf5qbH-fdt0ScysupK10e0"
+      - key: FIREBASE_AUTH_DOMAIN
+        value: "gorwth.firebaseapp.com"
+      - key: FIREBASE_PROJECT_ID
+        value: "gorwth"
+      - key: FIREBASE_STORAGE_BUCKET
+        value: "gorwth.firebasestorage.app"
+      - key: FIREBASE_MESSAGING_SENDER_ID
+        value: "36209213488"
+      - key: FIREBASE_APP_ID
+        value: "1:36209213488:web:a0441fe55e2c771aaaedf5"
+      - key: FIREBASE_MEASUREMENT_ID
+        value: "G-ZE7SY6VLVD"
+
+  # Optional: Add a PostgreSQL database if needed in the future
+  # - type: pserv
+  #   name: jee-tracker-db
+  #   databaseName: jee_tracker
+  #   user: jee_tracker_user

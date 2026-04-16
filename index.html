@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JEE Growth Tracker - Modern Study Companion</title>
+    <meta name="description" content="Track your JEE Mains preparation with beautiful analytics, study timers, and progress monitoring">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/main.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script type="module" src="/src/main.ts"></script>
+</head>
+<body class="bg-gradient-to-br from-black via-gray-900 to-black min-h-screen">
+    <!-- Authentication Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-gray-900 rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 transform transition-all border border-gray-700">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-purple-600 rounded-full mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+                <h2 id="authTitle" class="text-2xl font-bold text-white mb-2">Welcome Back</h2>
+                <p class="text-gray-400">Sign in to track your JEE preparation</p>
+            </div>
+            
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="w-full px-4 py-3 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all placeholder-gray-400"
+                        placeholder="Email address" 
+                        required 
+                    />
+                </div>
+                <div>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="w-full px-4 py-3 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all placeholder-gray-400"
+                        placeholder="Password" 
+                        required 
+                    />
+                </div>
+                <div id="authError" class="hidden bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg"></div>
+                <button 
+                    type="submit" 
+                    id="authSubmit"
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-[1.02]"
+                >
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    <span id="authToggleText" class="text-gray-400">Don't have an account?</span>
+                    <a id="authToggleLink" class="text-purple-400 hover:text-purple-300 font-medium ml-1 cursor-pointer">Sign up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="appContainer">
+        <!-- Modern Header -->
+        <header class="glass-effect sticky top-0 z-40 border-b border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                <span class="text-white font-bold text-xl">J</span>
+                            </div>
+                            <h1 class="ml-3 text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                JEE Tracker
+                            </h1>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-6">
+                        <!-- Streak Badge -->
+                        <div class="flex items-center space-x-2 bg-gradient-to-r from-orange-600 to-red-600 text-white px-3 py-1.5 rounded-full">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/>
+                            </svg>
+                            <span id="streak-count" class="font-semibold">0</span>
+                            <span class="text-sm">day streak</span>
+                        </div>
+                        
+                        <!-- User Section -->
+                        <div id="user-section" class="flex items-center space-x-3">
+                            <div class="text-right">
+                                <p id="user-email" class="text-sm font-medium text-gray-200"></p>
+                                <p class="text-xs text-gray-400">Student</p>
+                            </div>
+                            <button 
+                                id="logoutBtn"
+                                class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="bg-gray-900/95 backdrop-blur-sm border-b border-gray-700 sticky top-16 z-30 shadow-lg">
+            <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex space-x-1 overflow-x-auto scrollbar-hide">
+                        <button class="nav-btn px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border-b-2 border-purple-500 text-purple-400 bg-purple-500/10 min-w-fit" data-page="home">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Dashboard</span>
+                                <span class="sm:hidden">Home</span>
+                            </div>
+                        </button>
+                        <button class="nav-btn px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800 min-w-fit" data-page="study">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Study Log</span>
+                                <span class="sm:hidden">Log</span>
+                            </div>
+                        </button>
+                        <button class="nav-btn px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800 min-w-fit" data-page="timer">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Timer</span>
+                                <span class="sm:hidden">Pom</span>
+                            </div>
+                        </button>
+                        <button class="nav-btn px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800 min-w-fit" data-page="progress">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Progress</span>
+                                <span class="sm:hidden">Stats</span>
+                            </div>
+                        </button>
+                        <button class="nav-btn px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800 min-w-fit" data-page="reminders">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Reminders</span>
+                                <span class="sm:hidden">Bell</span>
+                            </div>
+                        </button>
+                    </div>
+                    <button class="nav-btn px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border border-gray-600 text-gray-400 hover:text-gray-200 hover:bg-gray-800 hover:border-purple-500 min-w-fit" data-page="firebase-test">
+                        <div class="flex items-center space-x-1 sm:space-x-2">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Firebase Test</span>
+                            <span class="sm:hidden">Test</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Dashboard Page -->
+            <section id="page-home" class="page block">
+                <div class="mb-8 fade-in">
+                    <h2 class="text-4xl font-bold text-white mb-2 neon-text">Welcome back! </h2>
+                    <p class="text-gray-300 text-lg">Track your JEE preparation journey 🚀</p>
+                    <div class="mt-4 p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-xl border border-purple-700/30">
+                        <p id="motivationalQuote" class="text-lg text-white font-medium italic"></p>
+                        <p class="text-sm text-purple-300 mt-2">JEE Motivation</p>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+                    <div class="glow-card slide-in p-2 sm:p-3" style="animation-delay: 0.1s">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center floating">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs text-gray-400">Today</span>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white" id="dash-today">0h</h3>
+                        <p class="text-xs text-gray-300">Study Hours</p>
+                        <div class="mt-2">
+                            <div class="w-full bg-gray-700 rounded-full h-1">
+                                <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-1 rounded-full transition-all duration-500" style="width: 0%" id="today-progress"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glow-card slide-in p-2 sm:p-3" style="animation-delay: 0.2s">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center floating" style="animation-delay: 0.5s">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs text-gray-400">Streak</span>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white" id="dash-streak">0</h3>
+                        <p class="text-xs text-gray-300">Days</p>
+                        <div class="mt-2">
+                            <div class="w-full bg-gray-700 rounded-full h-1">
+                                <div class="bg-gradient-to-r from-orange-500 to-red-500 h-1 rounded-full transition-all duration-500" style="width: 0%" id="streak-progress"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glow-card slide-in p-2 sm:p-3" style="animation-delay: 0.3s">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center floating" style="animation-delay: 0.7s">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs text-gray-400">This Week</span>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white" id="dash-weekly">0h</h3>
+                        <p class="text-xs text-gray-300">Total Hours</p>
+                        <div class="mt-2">
+                            <div class="text-xs text-green-400">+12% from last week</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="glow-card slide-in" style="animation-delay: 0.5s">
+                        <h3 class="text-lg font-semibold text-white mb-4">Weekly Progress</h3>
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                    <div class="glow-card slide-in" style="animation-delay: 0.6s">
+                        <h3 class="text-lg font-semibold text-white mb-4">Subject Distribution</h3>
+                        <canvas id="subjectChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Achievements Section -->
+                <div class="glow-card slide-in mb-8" style="animation-delay: 0.7s">
+                    <h3 class="text-xl font-bold text-white mb-6">🏆 Achievements & Milestones</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 text-center">
+                            <div class="text-3xl mb-2">🎯</div>
+                            <h4 class="font-semibold text-white mb-1">Goal Crusher</h4>
+                            <p class="text-sm text-gray-400">Complete daily goals for 7 days straight</p>
+                            <div class="mt-3">
+                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: 0%" id="goal-crusher-progress"></div>
+                                </div>
+                                <span class="text-xs text-gray-400 mt-1">0/7 days</span>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 text-center">
+                            <div class="text-3xl mb-2">📚</div>
+                            <h4 class="font-semibold text-white mb-1">Study Master</h4>
+                            <p class="text-sm text-gray-400">Study 100+ hours total</p>
+                            <div class="mt-3">
+                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: 0%" id="study-master-progress"></div>
+                                </div>
+                                <span class="text-xs text-gray-400 mt-1">0/100 hours</span>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 text-center">
+                            <div class="text-3xl mb-2">⚡</div>
+                            <h4 class="font-semibold text-white mb-1">Speed Learner</h4>
+                            <p class="text-sm text-gray-400">Complete 50 study sessions</p>
+                            <div class="mt-3">
+                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style="width: 0%" id="speed-learner-progress"></div>
+                                </div>
+                                <span class="text-xs text-gray-400 mt-1">0/50 sessions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Growth Analytics -->
+                <div class="glow-card slide-in" style="animation-delay: 0.8s">
+                    <h3 class="text-xl font-bold text-white mb-6">📈 Growth Analytics</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-400" id="growth-rate">+0%</div>
+                            <p class="text-sm text-gray-400">Monthly Growth</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-400" id="avg-daily">0h</div>
+                            <p class="text-sm text-gray-400">Daily Average</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-400" id="best-day">0h</div>
+                            <p class="text-sm text-gray-400">Best Day</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-orange-400" id="total-sessions">0</div>
+                            <p class="text-sm text-gray-400">Total Sessions</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Study Log Page -->
+            <section id="page-study" class="page hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">Study Log</h2>
+                    <p class="text-gray-400">Track your daily study hours</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Study Input Form -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
+                            <h3 class="text-lg font-semibold text-white mb-4">Log Study Hours</h3>
+                            <form id="studyForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Physics (hours)</label>
+                                    <input type="number" id="physicsHours" step="0.5" min="0" max="24" 
+                                           class="w-full px-3 py-2 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Chemistry (hours)</label>
+                                    <input type="number" id="chemistryHours" step="0.5" min="0" max="24" 
+                                           class="w-full px-3 py-2 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Mathematics (hours)</label>
+                                    <input type="number" id="mathHours" step="0.5" min="0" max="24" 
+                                           class="w-full px-3 py-2 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Daily Goal (hours)</label>
+                                    <input type="number" id="dailyGoal" step="0.5" min="0" max="24" 
+                                           class="w-full px-3 py-2 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400">
+                                </div>
+                                <button type="submit" id="logStudyBtn" 
+                                        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
+                                    Log Study Session
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Recent Sessions -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
+                            <h3 class="text-lg font-semibold text-white mb-4">Recent Sessions</h3>
+                            <div id="sessionsList" class="space-y-3">
+                                <!-- Sessions will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Timer Page -->
+            <section id="page-timer" class="page hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">Pomodoro Timer</h2>
+                    <p class="text-gray-400">Focus sessions for effective studying</p>
+                </div>
+
+                <div class="max-w-2xl mx-auto">
+                    <div class="bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-700">
+                        <div class="text-center mb-8">
+                            <div class="timer-phase text-sm font-medium text-gray-400 mb-2">FOCUS SESSION</div>
+                            <div id="timerTime" class="text-6xl font-bold text-white mb-4">45:00</div>
+                            <input type="text" id="currentTask" placeholder="What are you working on?" 
+                                   class="w-full max-w-md mx-auto px-4 py-3 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center placeholder-gray-400">
+                        </div>
+
+                        <div class="flex justify-center space-x-4">
+                            <button id="startTimerBtn" 
+                                    class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                                Start
+                            </button>
+                            <button id="pauseTimerBtn" 
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                                Pause
+                            </button>
+                            <button id="resetTimerBtn" 
+                                    class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                                Reset
+                            </button>
+                        </div>
+
+                        <div class="mt-8 text-center">
+                            <div class="text-sm text-gray-400">Sessions completed today</div>
+                            <div id="sessionsCompleted" class="text-2xl font-bold text-purple-400">0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reminders Page -->
+            <section id="page-reminders" class="page hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">Study Reminders</h2>
+                    <p class="text-gray-400">Set up notifications to keep you on track</p>
+                </div>
+
+                <!-- Notification Permission -->
+                <div id="notificationPermission" class="mb-6 p-4 bg-yellow-900/30 border border-yellow-700/50 rounded-lg">
+                    <p class="text-sm text-yellow-300 mb-2">Tap to enable browser notifications for reminders</p>
+                    <button id="enableNotifications" class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors">
+                        Enable Notifications
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Add New Reminder -->
+                    <div class="glow-card slide-in p-6" style="animation-delay: 0.2s">
+                        <h3 class="text-lg font-semibold text-white mb-4">Add New Reminder</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Label</label>
+                                <input type="text" id="reminderLabel" placeholder="e.g. Start studying" 
+                                       class="w-full px-3 py-2 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm placeholder-gray-400">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Time</label>
+                                <input type="time" id="reminderTime" 
+                                       class="w-full px-3 py-2 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Repeat Days</label>
+                                <div class="grid grid-cols-7 gap-1">
+                                    <button class="repeat-day px-2 py-1 text-xs border border-gray-600 rounded hover:bg-purple-600 hover:border-purple-500 transition-colors" data-day="0">Sun</button>
+                                    <button class="repeat-day px-2 py-1 text-xs border border-gray-600 rounded hover:bg-purple-600 hover:border-purple-500 transition-colors" data-day="1">Mon</button>
+                                    <button class="repeat-day px-2 py-1 text-xs border border-gray-600 rounded hover:bg-purple-600 hover:border-purple-500 transition-colors" data-day="2">Tue</button>
+                                    <button class="repeat-day px-2 py-1 text-xs border border-gray-600 rounded hover:bg-purple-600 hover:border-purple-500 transition-colors" data-day="3">Wed</button>
+                                    <button class="repeat-day px-2 py-1 text-xs border border-gray-600 rounded hover:bg-purple-600 hover:border-purple-500 transition-colors" data-day="4">Thu</button>
+                                    <button class="repeat-day px-2 py-1 text-xs border border-gray-600 rounded hover:bg-purple-600 hover:border-purple-500 transition-colors" data-day="5">Fri</button>
+                                    <button class="repeat-day px-2 py-1 text-xs border border-gray-600 rounded hover:bg-purple-600 hover:border-purple-500 transition-colors" data-day="6">Sat</button>
+                                </div>
+                            </div>
+                            <button id="addReminder" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                                Add Reminder
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Reminders -->
+                    <div class="glow-card slide-in p-6" style="animation-delay: 0.3s">
+                        <h3 class="text-lg font-semibold text-white mb-4">Active Reminders</h3>
+                        <div id="remindersList" class="space-y-2">
+                            <p class="text-sm text-gray-400">No reminders added yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Check-In -->
+                <div class="glow-card slide-in p-6 mt-6" style="animation-delay: 0.4s">
+                    <h3 class="text-lg font-semibold text-white mb-4">Daily Check-In</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-300">Remind if no session logged</span>
+                            <input type="checkbox" id="dailyCheckIn" class="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500">
+                        </div>
+                        <div id="checkInTimeDiv" class="hidden">
+                            <p class="text-xs text-gray-400 mb-2">Alert if no study logged by check-in time</p>
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm text-gray-300">Check-in at</label>
+                                <input type="time" id="checkInTime" value="20:00" 
+                                       class="px-2 py-1 border border-gray-600 bg-gray-800 text-white rounded text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Progress Page -->
+            <section id="page-progress" class="page hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">Progress Analytics</h2>
+                    <p class="text-gray-400">Track your improvement over time</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Physics Progress</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Total Hours</span>
+                                <span id="physicsProgress" class="font-medium text-white">0h</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-1.5">
+                                <div class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Chemistry Progress</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Total Hours</span>
+                                <span id="chemistryProgress" class="font-medium text-white">0h</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-1.5">
+                                <div class="bg-green-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Mathematics Progress</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Total Hours</span>
+                                <span id="mathProgress" class="font-medium text-white">0h</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-1.5">
+                                <div class="bg-purple-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Monthly Trends</h3>
+                    <div class="h-64">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Firebase Test Page -->
+            <section id="page-firebase-test" class="page hidden">
+                <div class="mb-8 fade-in">
+                    <h2 class="text-4xl font-bold text-white mb-2 neon-text">Firebase Connection Test</h2>
+                    <p class="text-gray-300 text-lg">Test and diagnose Firebase connectivity issues</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Connection Status -->
+                    <div class="glow-card slide-in" style="animation-delay: 0.1s">
+                        <h3 class="text-xl font-bold text-white mb-6">🔗 Connection Status</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
+                                <span class="text-gray-300">Firebase Config</span>
+                                <span id="config-status" class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">Loading...</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
+                                <span class="text-gray-300">Auth Service</span>
+                                <span id="auth-status" class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">Loading...</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
+                                <span class="text-gray-300">Firestore Database</span>
+                                <span id="firestore-status" class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">Loading...</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
+                                <span class="text-gray-300">Current User</span>
+                                <span id="user-status" class="px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">Not Logged In</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authentication Test -->
+                    <div class="glow-card slide-in" style="animation-delay: 0.2s">
+                        <h3 class="text-xl font-bold text-white mb-6">🔐 Authentication Test</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Test Email</label>
+                                <input type="email" id="test-email" placeholder="test@example.com" 
+                                       class="input-field w-full">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Test Password</label>
+                                <input type="password" id="test-password" placeholder="123456" 
+                                       class="input-field w-full">
+                            </div>
+                            
+                            <div class="flex space-x-3">
+                                <button id="test-signup" class="btn-primary flex-1">
+                                    Test Sign Up
+                                </button>
+                                <button id="test-signin" class="btn-secondary flex-1">
+                                    Test Sign In
+                                </button>
+                            </div>
+                            
+                            <div id="auth-test-result" class="hidden p-3 rounded-lg text-sm">
+                                <!-- Test results will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Test -->
+                <div class="glow-card slide-in mt-6" style="animation-delay: 0.3s">
+                    <h3 class="text-xl font-bold text-white mb-6">💾 Database Operations Test</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button id="test-write" class="btn-primary">
+                            Test Write Operation
+                        </button>
+                        <button id="test-read" class="btn-primary">
+                            Test Read Operation
+                        </button>
+                        <button id="test-delete" class="btn-primary">
+                            Test Delete Operation
+                        </button>
+                    </div>
+                    
+                    <div id="db-test-result" class="mt-4 hidden p-4 rounded-lg bg-gray-800/50">
+                        <h4 class="font-semibold text-white mb-2">Test Results:</h4>
+                        <pre id="db-test-output" class="text-sm text-gray-300 whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Firebase Info -->
+                <div class="glow-card slide-in mt-6" style="animation-delay: 0.4s">
+                    <h3 class="text-xl font-bold text-white mb-6">ℹ️ Firebase Configuration</h3>
+                    
+                    <div class="bg-gray-800/50 rounded-lg p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-400">Project ID:</span>
+                                <span class="text-white ml-2" id="project-id">Loading...</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Auth Domain:</span>
+                                <span class="text-white ml-2" id="auth-domain">Loading...</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Database URL:</span>
+                                <span class="text-white ml-2" id="database-url">Loading...</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Storage Bucket:</span>
+                                <span class="text-white ml-2" id="storage-bucket">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+                
+        <!-- Footer -->
+        <footer class="bg-gray-900 border-t border-gray-700 mt-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                <span class="text-white font-bold text-sm">J</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">JEE Tracker</h3>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            Your modern companion for JEE Mains preparation. Track progress, stay motivated, and achieve your goals.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Features</h4>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li>• Study Session Tracking</li>
+                            <li>• Progress Analytics</li>
+                            <li>• Pomodoro Timer</li>
+                            <li>• Goal Setting</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Connect</h4>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                    <p class="text-gray-400 text-sm">
+                        © 2024 JEE Tracker. Built with ❤️ for students. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
